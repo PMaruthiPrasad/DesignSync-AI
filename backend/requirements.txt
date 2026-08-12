@@ -1,0 +1,22 @@
+# Pinned to the versions this project was built and tested against
+# (Python 3.12). Regenerate with `pip freeze` if you upgrade.
+
+fastapi==0.141.1
+uvicorn[standard]==0.52.1
+pydantic==2.13.4
+pydantic-settings==2.15.0
+SQLAlchemy==2.0.52
+langgraph==1.2.11
+python-multipart==0.0.32
+
+# LLM provider SDKs. Each is imported lazily inside its provider module, so a
+# missing one degrades to a clean error on that provider rather than breaking
+# startup for everyone else.
+google-genai==2.17.0     # Google Vertex AI (default provider)
+anthropic==0.121.0       # Anthropic
+openai==3.0.0            # OpenAI
+
+# testing
+pytest==9.1.1
+pytest-asyncio==1.4.0
+httpx==0.28.1
