@@ -18,6 +18,13 @@ os.environ.setdefault("MOCK_LLM", "true")
 os.environ.setdefault("MOCK_LATENCY_SCALE", "0.1")
 os.environ.setdefault("ANTHROPIC_API_KEY", "")
 
+# Hard override, not setdefault: a real GOOGLE_CLOUD_PROJECT in .env makes
+# VertexAIProvider(project=None) fall back to it (vertex_provider.py:36), so
+# the "unconfigured provider" tests would see a configured one — and one of
+# them would issue a real, billed Vertex call. Tests that want a project pass
+# it explicitly.
+os.environ["GOOGLE_CLOUD_PROJECT"] = ""
+
 _TMP_DB = Path(tempfile.gettempdir()) / "designsync_test.db"
 os.environ["DATABASE_URL"] = f"sqlite:///{_TMP_DB.as_posix()}"
 os.environ["UPLOAD_DIR"] = str(Path(tempfile.gettempdir()) / "designsync_test_uploads")
