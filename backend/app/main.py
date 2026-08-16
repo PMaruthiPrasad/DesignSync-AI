@@ -12,7 +12,7 @@ import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -92,6 +92,13 @@ if FRONTEND_DIST.is_dir():
     @app.get("/{full_path:path}", include_in_schema=False)
     async def serve_spa(full_path: str) -> FileResponse:
         """Serve built assets, falling back to index.html for client routes."""
+        # Unknown API paths must 404 as JSON, not fall through to the SPA. The
+        # router at api/__init__.py:7 owns /api, so anything left here is a
+        # genuine miss — returning index.html would surface as a JSON parse
+        # error in the client instead of a clean 404.
+        if full_path.startswith("api/"):
+            raise HTTPException(status_code=404, detail="Not found")
+
         candidate = (FRONTEND_DIST / full_path).resolve()
         if full_path and _is_within(FRONTEND_DIST.resolve(), candidate) and candidate.is_file():
             return FileResponse(candidate)
