@@ -39,11 +39,11 @@ COPY backend/ ./
 # local development (Vite on :5173) is unaffected.
 COPY --from=frontend /build/dist ./static
 
-# Run as a non-root user.
+# Create the non-root user the server will run as. The switch happens at
+# startup, not here — see the CMD below for why.
 RUN useradd --create-home --uid 10001 appuser \
     && mkdir -p /app/data \
     && chown -R appuser:appuser /app
-USER appuser
 
 # Vertex AI is the default provider. With no GOOGLE_CLOUD_PROJECT set it reports
 # itself unconfigured and the app falls back to the deterministic mock, so a
@@ -56,4 +56,13 @@ ENV LLM_PROVIDER=vertex \
 EXPOSE 8000
 
 # Shell form so Railway's injected $PORT expands.
-CMD uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}
+#
+# A mounted volume shadows /app/data at runtime, discarding the build-time
+# chown above and leaving it root-owned — SQLite then fails with "unable to
+# open database file" before the health check ever passes. So the container
+# starts as root, fixes ownership, and drops to appuser via setpriv (shipped
+# with python:3.12-slim). `exec` replaces the shell, so PID 1 is uvicorn
+# running unprivileged.
+CMD chown -R appuser:appuser /app/data \
+    && exec setpriv --reuid=appuser --regid=appuser --init-groups \
+       uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}
