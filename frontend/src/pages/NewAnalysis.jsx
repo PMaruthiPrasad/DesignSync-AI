@@ -98,21 +98,7 @@ export default function NewAnalysis() {
       {error && <ErrorBox title="Could not start the analysis" message={error} />}
 
       <form onSubmit={submit}>
-        <Section title="1 · Change Description">
-          <div className="field-hint">
-            Describe what changed in plain language. Phrasing it as “changed X from A to B” gives
-            the agents the most to work with.
-          </div>
-          <textarea
-            value={changeDescription}
-            onChange={(e) => setChangeDescription(e.target.value)}
-            placeholder={PLACEHOLDER}
-            rows={5}
-            aria-label="Change description"
-          />
-        </Section>
-
-        <Section title="2 · Repository">
+        <Section title="1 · Repository">
           <div className="option-row">
             <div
               className={`option-card${!repository ? ' selected' : ''}`}
@@ -159,6 +145,20 @@ export default function NewAnalysis() {
               </span>
             </div>
           )}
+        </Section>
+
+        <Section title="2 · Change Description">
+          <div className="field-hint">
+            Describe what changed in plain language. Phrasing it as “changed X from A to B” gives
+            the agents the most to work with.
+          </div>
+          <textarea
+            value={changeDescription}
+            onChange={(e) => setChangeDescription(e.target.value)}
+            placeholder={PLACEHOLDER}
+            rows={5}
+            aria-label="Change description"
+          />
         </Section>
 
         <Section title="3 · Analysis Settings">
